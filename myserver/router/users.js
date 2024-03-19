@@ -1,13 +1,39 @@
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const router = express.Router()
+const multer = require('multer')
+const fs = require('fs')
 /**
  * 引入数据库
  */
 const model = require('../db/database.js')
 const tokens = require('../db/token.js')
 const phoneCode = require('../db/phoneCode.js')
-const details=require('../db/commonInterface/details.js')
+const details = require('../db/commonInterface/details.js')
+/**
+ * 用户信息查询--请求头
+ */
+router.post('/query/user', (req, res) => {
+    const { user_id } = req.headers
+    if (user_id) {
+        model.find({ _id: user_id }).then(d => {
+            res.send({ code: 200, data: d[0] })
+        })
+    }
+
+})
+/**
+ * 用户信息查询--请求体
+ */
+router.post('/query2/user', (req, res) => {
+    const { user_id } = req.body
+    if (user_id) {
+        model.find({ _id: user_id }).then(d => {
+            res.send({ code: 200, data: d[0] })
+        })
+    }
+
+})
 /**
  * 用户注册
  */
@@ -55,7 +81,7 @@ router.post('/user/register', (req, res) => {
 router.post('/user/login', (req, res) => {
     const { username, password } = req.body
     let token = jwt.sign({ username }, 'zw', { expiresIn: '999h' })
-    model.find({ username, password }, { '__v': 0 }).then(data => {
+    model.find({ username, password }).then(data => {
         if (!data.length) {
             res.send({ code: 400, msg: '用户或者密码错误' })
         } else {
@@ -66,7 +92,7 @@ router.post('/user/login', (req, res) => {
                     tokens.updateOne({ user_id: username }, { $set: { token: token } }).then(d => { })
                 }
             })
-            data[0].token=token
+            data[0].token = token
             res.send({ code: 200, msg: '登录成功', data: data[0] })
         }
     })
@@ -84,10 +110,11 @@ router.post('/phone/code', (req, res) => {
             phoneCode.find({ phone: phone }).then(data1 => {
                 if (!data1.length) {
                     phoneCode.insertMany({ 'phone': phone, 'code': code })
-                    res.send({ code: 200, data:code })
+                    res.send({ code: 200, data: code })
                 } else {
-                    phoneCode.updateOne({ phone: phone }, { $set: { code: code } }).then(d => { })
-                    res.send({ code: 200, data:{code:data1[0].code,phone:phone} })
+                    phoneCode.updateOne({ phone: phone }, { $set: { code: code } }).then(d => {
+                    })
+                    res.send({ code: 200, data: { code: code, phone: phone } })
                 }
             })
         }
@@ -99,7 +126,7 @@ router.post('/phone/code', (req, res) => {
 router.post('/login/phone', (req, res) => {
     const { phone, code } = req.body
     let token = jwt.sign({ phone }, 'zw', { expiresIn: '999h' })
-    model.find({ phone }, { '_id': 0, '__v': 0 }).then(data => {
+    model.find({ phone }).then(data => {
         if (!data.length) {
             res.send({ code: 400, msg: '输入的手机号有误' })
         } else {
@@ -114,7 +141,7 @@ router.post('/login/phone', (req, res) => {
                             tokens.updateOne({ user_id: data[0].username }, { $set: { token: token } }).then(d1 => { })
                         }
                     })
-                    data[0].token=token
+                    data[0].token = token
                     res.send({ code: 200, msg: '登录成功', data: data[0] })
                 }
             })
@@ -155,7 +182,7 @@ router.post('/auto/login', (req, res) => {
                 if (!d.length) {
                     res.send({ code: 400, msg: 'token已过期，请重新登录' })
                 } else {
-                    d[0].token=data[0].token
+                    d[0].token = data[0].token
                     res.send({ code: 200, msg: '', data: d[0] })
                 }
             })
@@ -164,11 +191,42 @@ router.post('/auto/login', (req, res) => {
 })
 
 /** 获取协议接口 */
-router.get('/suggest/info',(req,res)=>{
-    details.find().then(data=>{
+router.get('/suggest/info', (req, res) => {
+    details.find().then(data => {
         console.log(data[0].details);
-        res.send({code:200,data:data[0].details})
+        res.send({ code: 200, data: data[0].details })
     })
+})
+
+/** 用户头像上传 */
+// ----------------------------------- //
+// 创建一个存储实例
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // 指定存储文件的目标路径
+        cb(null, 'upload/userHead');
+    },
+    filename: (req, file, cb) => {
+        // 使用原始文件名
+        cb(null, file.originalname);
+    }
+});
+// 使用存储实例创建 multer 中间件
+const upload = multer({ storage: storage });
+// ----------------------------------- //
+router.post('/user/head', upload.single('file'), (req, res) => {
+    // console.log(req);
+    const file = req.file
+    const { _id } = req.headers
+    if (_id) {
+        model.find({ _id: _id }).then(d => {
+            if (d.length) {
+                model.updateOne({ _id: d[0]._id }, { $set: { photo: `/upload/userHead/${file.filename}` } }).then(d1 => {
+                    res.send({ code: 200, msg: '上传成功', path: `/upload/userHead/${file.filename}` })
+                })
+            }
+        })
+    }
 })
 
 module.exports = router

@@ -47,6 +47,10 @@ const stores = new mongoose.Schema({
     store_password:{
         type:String,
         required:true
+    },
+    store_logo:{
+        type:String,
+        required:true
     }
 })
 
@@ -55,6 +59,7 @@ const stores = new mongoose.Schema({
  */
 const model = mongoose.model('stores', stores)
 module.exports = model
+
 
 // model.insertMany({store_id:'001',store_name:'创意工坊',store_des:'这是一个专门售卖手办的小店',store_phone:'12345678901',store_address:'四川省成都市青羊区苏坡街道22号',store_create_time:'2023.03.10',store_create_creater:'张三',store_username:'chuangyigongfang',store_password:'12345'})
 // model.insertMany({

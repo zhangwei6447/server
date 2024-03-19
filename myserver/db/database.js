@@ -35,6 +35,9 @@ const users = new mongoose.Schema({
     },
     token: {
         type: String
+    },
+    goods_collect:{
+        type:Array
     }
 })
 

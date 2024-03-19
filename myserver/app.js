@@ -1,6 +1,7 @@
 // 引入
-const express=require('express')
-const cors=require('cors')
+const express = require('express')
+const cors = require('cors')
+const bodyParser = require('body-parser')
 // ------------------------------- //
 // 定义-方便使用
 const app = express()
@@ -12,18 +13,24 @@ const app = express()
 
 // ================================ //
 // 用户接口
-const usersRouter=require('./router/users.js')
+const usersRouter = require('./router/users.js')
 // 商家接口
-const storeRouter=require('./router/store.js')
+const storeRouter = require('./router/store.js')
 // 购物车接口
-const cartRouter=require('./router/cart.js')
+const cartRouter = require('./router/cart.js')
 // 商品接口
-const goodsRouter=require('./router/goods.js')
+const goodsRouter = require('./router/goods.js')
+// 图片访问接口
+const imgRouter = require('./router/imgRequest.js')
+// 评论接口
+const remarkRputer = require('./router/remark.js')
+// 测试接口
+const testRouter = require('./router/test.js')
 // ================================ //
 
 
 // 监听接口
-app.listen(8888,()=>{
+app.listen(8888, () => {
     console.log(`
         服务器启动成功！
         地址为：http://localhost:8888
@@ -33,6 +40,8 @@ app.listen(8888,()=>{
 app.use(cors())
 // post请求参数
 app.use(express.urlencoded())
+// 
+// app.use(bodyParser())
 
 /**
  * 挂载接口
@@ -42,4 +51,7 @@ app.use(usersRouter)
 app.use(storeRouter)
 app.use(cartRouter)
 app.use(goodsRouter)
+app.use(imgRouter)
+app.use(remarkRputer)
+app.use(testRouter)
 // ================================ //

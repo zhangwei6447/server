@@ -37,7 +37,7 @@ const goods = new mongoose.Schema({
         required: true
     },
     want: {
-        type: Number,
+        type: Array,
         required: true
     },
     the_charts_des: {
@@ -59,9 +59,20 @@ const goods = new mongoose.Schema({
         type: Number,
         required: true
     },
-    ground_time:{
-        type:Number,
-        required:true
+    ground_time: {
+        type: Number,
+        required: true
+    },
+    // 售出
+    sold: {
+        type: Number
+    },
+    // 库存
+    stock: {
+        type: Number
+    },
+    purchase_limit:{
+        type:Number
     }
 })
 
@@ -70,10 +81,10 @@ const goods = new mongoose.Schema({
  */
 const model = mongoose.model('goods', goods)
 module.exports = model
+
 // model.find().then(d=>{
 //     for(let i=0;i<d.length;i++){
-//         let time=Date.now()
-//         model.updateOne({goods_id:d[i].goods_id},{$set:{ground_time:time}}).then(date=>{
+//         model.updateOne({goods_id:d[i].goods_id},{$set:{purchase_limit:5}}).then(date=>{
 //             console.log('更新成功');
 //         })
 //     }
