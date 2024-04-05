@@ -25,11 +25,13 @@ const imgRouter = require('./router/imgRequest.js')
 // 评论接口
 const remarkRputer = require('./router/remark.js')
 // 搜索接口
-const searchRouter=require('./router/search.js')
+const searchRouter = require('./router/search.js')
 // 聊天客服接口
-const chatRouter=require('./router/chat.js')
+const chatRouter = require('./router/chat.js')
 // 地址接口
-const addressRouter=require('./router/address.js')
+const addressRouter = require('./router/address.js')
+// 订单接口
+const orderRouter = require('./router/order.js')
 // 测试接口
 const testRouter = require('./router/test.js')
 // ================================ //
@@ -62,5 +64,6 @@ app.use(remarkRputer)
 app.use(searchRouter)
 app.use(chatRouter)
 app.use(addressRouter)
+app.use(orderRouter)
 app.use(testRouter)
 // ================================ //

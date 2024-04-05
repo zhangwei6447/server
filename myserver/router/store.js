@@ -32,6 +32,17 @@ router.get('/query/store', (req, res) => {
 })
 
 /**
+ * 查询商家--通过_id
+ */
+router.post('/query/store2', (req, res) => {
+    const { _id } = req.body
+    if (!_id) return
+    model.find({ _id }).then(d => {
+        res.send({ code: 200, data: d[0] })
+    })
+})
+
+/**
  * 商品表
  */
 router.get('/store/goods', (req, res) => {

@@ -57,7 +57,7 @@ router.post('/address/query', (req, res) => {
 router.post('/address/update', (req, res) => {
     const { user_id, consignee, phone, province, city, county, detail_address, is_default, date, _id } = req.body
     if (!user_id || !consignee || !phone || !province || !city || !county || !detail_address || !is_default || !date) return
-    if (is_default) {
+    if (is_default === 'true') {
         addressTable.find({ user_id }).then(d => {
             if (!d.length) return
             d.forEach(item => {
@@ -74,19 +74,21 @@ router.post('/address/update', (req, res) => {
 
 // 删除地址接口
 router.post('/address/delete', (req, res) => {
-    const { _id } = req.body
+    const { _id, user_id, is_default } = req.body
     if (!_id) return
-    addressTable.find({ _id }).then(d => {
-        if (d[0].is_default) {
-            addressTable.find().then(d2 => {
-                let arr = d2.filter(item => item._id !== _id)
-                let obj = arr.sort((a, b) => b.date - a.date)[0]
-                addressTable.updateOne({ _id: JSON.parse(JSON.stringify(obj._id)) }, { $set: { is_default: true } }).then(d3 => { })
-            })
+    // 删除对应地址
+    addressTable.deleteOne({ _id }).then(d3 => { res.send({ code: 200, msg: '删除地址成功' }) })
+    // 更新默认
+    addressTable.find({ user_id }).then(data => {
+        if (data.length >= 2) {
+            if (is_default === 'true') {
+                addressTable.find().then(d2 => {
+                    let arr = d2.filter(item => item._id !== _id)
+                    let obj = arr.sort((a, b) => b.date - a.date)[0]
+                    addressTable.updateOne({ _id: JSON.parse(JSON.stringify(obj._id)) }, { $set: { is_default: true } }).then(d3 => { })
+                })
+            }
         }
-    })
-    addressTable.deleteOne({ _id }).then(d => {
-        res.send({ code: 200, msg: '删除地址成功' })
     })
 })
 
