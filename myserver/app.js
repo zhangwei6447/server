@@ -32,6 +32,8 @@ const chatRouter = require('./router/chat.js')
 const addressRouter = require('./router/address.js')
 // 订单接口
 const orderRouter = require('./router/order.js')
+// 人气排行接口
+const popularRouter=require('./router/popular.js')
 // 测试接口
 const testRouter = require('./router/test.js')
 // ================================ //
@@ -65,5 +67,6 @@ app.use(searchRouter)
 app.use(chatRouter)
 app.use(addressRouter)
 app.use(orderRouter)
+app.use(popularRouter)
 app.use(testRouter)
 // ================================ //

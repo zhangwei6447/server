@@ -198,6 +198,44 @@ router.get('/suggest/info', (req, res) => {
     })
 })
 
+/** 查询用户名是否存在 */
+router.post('/query/username', (req, res) => {
+    const { _id, username } = req.body
+    if (!_id || !username) return
+    model.find().then(data => {
+        model.find({ _id }).then(d => {
+            console.log(data.filter(it => it.username !== d[0].username).some(it => it.username === username));
+            if (data.filter(it => it.username !== d[0].username).some(it => it.username === username)) {
+                res.send({ code: 200, msg: '用户名已存在，请换一个' })
+            } else {
+                res.send({ code: 200, msg: '用户名可用' })
+            }
+        })
+    })
+})
+
+/** 修改用户信息 */
+router.post('/user/update', (req, res) => {
+    const { _id } = req.body
+    if (!_id) return
+    const { photo, username, sex, phone, email } = req.body
+    model.find().then(d => {
+        model.find({ _id }).then(d2 => {
+            if (d.filter(it => it.username !== d2[0].username).some(it => it.username === username)) {
+                res.send({ code: 200, msg: '该用户名已存在，请换一个' })
+
+            } else if (d.filter(it => it.phone !== d2[0].phone).some(it => it.phone === phone)) {
+                res.send({ code: 200, msg: '该电话号码已存在' })
+            } else {
+                model.updateOne({ _id }, { $set: { photo, username, sex, phone, email } }).then(d1 => {
+                    console.log(d1);
+                    res.send({ code: 200, msg: '个人信息修改成功' })
+                })
+            }
+        })
+    })
+})
+
 /** 用户头像上传 */
 // ----------------------------------- //
 // 创建一个存储实例
@@ -215,18 +253,27 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 // ----------------------------------- //
 router.post('/user/head', upload.single('file'), (req, res) => {
-    // console.log(req);
-    const file = req.file
-    const { _id } = req.headers
-    if (_id) {
-        model.find({ _id: _id }).then(d => {
-            if (d.length) {
-                model.updateOne({ _id: d[0]._id }, { $set: { photo: `/upload/userHead/${file.filename}` } }).then(d1 => {
-                    res.send({ code: 200, msg: '上传成功', path: `/upload/userHead/${file.filename}` })
+    const { user_id } = req.headers
+    const { img_base64, img_name } = req.body
+    // 定义路径名
+    const pc_name = img_name + '.' + img_base64.split(';')[0].split('/')[1]
+    const filepath = `upload/userHead/${pc_name}`
+    //去掉图片base64码前面部分data:image/png;base64
+    const base64 = img_base64.replace(/^data:image\/\w+;base64,/, "");
+    // base64转图片
+    const buffer = new Buffer.from(base64, 'base64')
+    // 写入文件
+    fs.writeFile(filepath, buffer, (err) => {
+        if (err) {
+            res.send('写入文件夹失败', err)
+        } else {
+            if (user_id) {
+                model.updateOne({ _id:user_id }, { $set: { photo: '/' + filepath } }).then(d1 => {
+                    res.send({ code: 200, msg: '上传成功头像' })
                 })
             }
-        })
-    }
+        }
+    })
 })
 
 module.exports = router
